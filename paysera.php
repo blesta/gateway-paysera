@@ -259,12 +259,12 @@ class Paysera extends NonmerchantGateway
             $client_id = $order_parts[0];
         }
 
-        // Print expected response by the Alipay api
+        // Print expected response by the Paysera api
         echo 'OK';
 
         return [
             'client_id' => $client_id,
-            'amount' => isset($response['amount']) ? $response['amount'] / 10 : null,
+            'amount' => isset($response['amount']) ? $response['amount'] / 100 : null,
             'currency' => $response['currency'] ?? null,
             'invoices' => $this->unserializeInvoices($get['invoices'] ?? null),
             'status' => 'approved',
@@ -305,7 +305,7 @@ class Paysera extends NonmerchantGateway
 
         $params = [
             'client_id' => $get['client_id'] ?? null,
-            'amount' => isset($response['amount']) ? $response['amount'] / 10 : null,
+            'amount' => isset($response['amount']) ? $response['amount'] / 100 : null,
             'currency' => $response['currency'] ?? null,
             'invoices' => $this->unserializeInvoices($get['invoices'] ?? null),
             'status' => isset($response) ? 'approved' : 'declined',
