@@ -177,6 +177,11 @@ class Paysera extends NonmerchantGateway
             $options['recur']['amount'] = round($options['recur']['amount'], 2);
         }
 
+        // Some callers (e.g. the client "pay invoice" page) already include a query string in
+        // return_url, others (e.g. the Order plugin's checkout complete page) do not, so pick
+        // the correct separator instead of always assuming '&'
+        $return_url_separator = (strpos($options['return_url'], '?') !== false) ? '&' : '?';
+
         // Build payment
         $payment = [
             'projectid' => $this->meta['project_id'],
@@ -186,14 +191,22 @@ class Paysera extends NonmerchantGateway
             'amount' => $amount * 100,
             'currency' => $this->currency,
             'country' => $contact_info['country']['alpha2'] ?? null,
-            'accepturl' => $options['return_url'] . '&invoices=' . $this->serializeInvoices($invoice_amounts),
-            'cancelurl' => $options['return_url'] . '&invoices=' . $this->serializeInvoices($invoice_amounts),
+            'accepturl' => $options['return_url'] . $return_url_separator
+                . 'invoices=' . $this->serializeInvoices($invoice_amounts),
+            'cancelurl' => $options['return_url'] . $return_url_separator
+                . 'invoices=' . $this->serializeInvoices($invoice_amounts),
             'callbackurl' => Configure::get('Blesta.gw_callback_url')
                 . Configure::get('Blesta.company_id') . '/paysera/?invoices=' . $this->serializeInvoices($invoice_amounts),
             'test' => ($this->meta['sandbox'] == 'false' ? 0 : 1)
         ];
 
         if (isset($_GET['proceed']) && $_GET['proceed'] == 'true') {
+            // Log the outbound request (minus the shared secret) to help diagnose
+            // "Incorrect sign" rejections from Paysera
+            $log_payment = $payment;
+            unset($log_payment['sign_password']);
+            $this->log(($_SERVER['REQUEST_URI'] ?? null), serialize($log_payment), 'output', true);
+
             WebToPay::redirectToPayment($payment, true);
         }
 

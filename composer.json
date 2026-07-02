@@ -12,5 +12,12 @@
             "name": "Phillips Data, Inc.",
             "homepage": "http://blesta.com"
         }
-    ]
+    ],
+    "extra": {
+        "patches": {
+            "webtopay/libwebtopay": {
+                "Add SS3 (SHA-256) callback signature support for OpenSSL 3.x compatibility": "patches/webtopay-ss3-support.patch"
+            }
+        }
+    }
 }

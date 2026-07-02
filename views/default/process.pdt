@@ -6,6 +6,16 @@
     // Build payment button
     $this->Form->create(null, ['method' => 'get', 'id' => 'paysera_button']);
 
+    // A GET form submit replaces the entire query string with just this form's fields, so
+    // carry over any existing query params (e.g. the Order plugin's "gateway" selector) that
+    // the caller needs to still be present when this page is requested again with "proceed"
+    foreach ($_GET as $key => $value) {
+        if ($key === 'proceed' || is_array($value)) {
+            continue;
+        }
+        $this->Form->fieldHidden($key, $value);
+    }
+
     $this->Form->fieldHidden('proceed', 'true');
 
     $this->Form->fieldButton(
